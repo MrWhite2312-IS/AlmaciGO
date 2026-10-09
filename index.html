@@ -392,29 +392,75 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
-            margin: 18px 0;
+            gap: 12px;
+            margin: 16px 0 10px;
         }
         .cantidad-selector button {
-            width: 50px;
-            height: 50px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             border: 2px solid var(--verde);
             background: white;
             color: var(--verde);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
         }
         .cantidad-selector button:active {
             background: var(--verde);
             color: white;
         }
-        .cantidad-selector .cantidad-num {
-            font-size: 2.5rem;
-            font-weight: 700;
-            min-width: 60px;
+        .cantidad-input {
+            width: 110px;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 800;
             color: var(--verde);
+            border: 2px solid #c8e6c9;
+            border-radius: 12px;
+            padding: 4px 6px;
+            background: #fafafa;
+        }
+        .cantidad-input:focus {
+            outline: none;
+            border-color: var(--verde-claro);
+            background: white;
+        }
+        .cantidad-presets {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .preset-chip {
+            background: var(--verde-bg);
+            border: 1px solid #c8e6c9;
+            color: var(--verde);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .preset-chip:active {
+            background: var(--verde);
+            color: white;
+        }
+        .historial-acciones {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .historial-acciones .btn {
+            flex: 1;
+            min-width: 140px;
         }
         .modal-actions {
             display: flex;
@@ -851,6 +897,19 @@
                     <p>El historial de ferias aparecerá aquí</p>
                 </div>
             </div>
+
+            <div class="historial-acciones">
+                <button class="btn btn-primary" onclick="exportarHistorial()">
+                    📤 Exportar respaldo (JSON)
+                </button>
+                <button class="btn btn-outline" onclick="exportarHistorialCSV()">
+                    📊 Exportar resumen (CSV / Excel)
+                </button>
+                <button class="btn btn-outline" onclick="document.getElementById('inputImportarHistorial').click()">
+                    📥 Importar respaldo
+                </button>
+                <input type="file" id="inputImportarHistorial" accept=".json" style="display:none;" onchange="importarHistorial(event)">
+            </div>
         </div>
     </div>
 
@@ -859,11 +918,21 @@
         <div class="modal">
             <h3 id="modalNombre"></h3>
             <div class="modal-precio" id="modalPrecio"></div>
+            
             <div class="cantidad-selector">
-                <button onclick="cambiarCantidadModal(-1)">−</button>
-                <div class="cantidad-num" id="modalCantidadNum">1</div>
-                <button onclick="cambiarCantidadModal(1)">+</button>
+                <button type="button" onclick="cambiarCantidadModal(-1)">−</button>
+                <input type="number" id="inputCantidadNum" class="cantidad-input" min="1" step="1" inputmode="numeric" oninput="alCambiarInputCantidad(this.value)">
+                <button type="button" onclick="cambiarCantidadModal(1)">+</button>
             </div>
+
+            <div class="cantidad-presets">
+                <span class="preset-chip" onclick="fijarCantidadModal(1)">1</span>
+                <span class="preset-chip" onclick="fijarCantidadModal(5)">5</span>
+                <span class="preset-chip" onclick="fijarCantidadModal(10)">10</span>
+                <span class="preset-chip" onclick="fijarCantidadModal(20)">20</span>
+                <span class="preset-chip" onclick="fijarCantidadModal(50)">50</span>
+            </div>
+
             <div style="font-weight:700;color:var(--verde);font-size:1.3rem;margin-bottom:6px;" id="modalSubtotal"></div>
             <div class="modal-actions">
                 <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cancelar</button>
@@ -1229,19 +1298,46 @@
 
             document.getElementById('modalNombre').textContent = almacigo.emoji + ' ' + almacigo.nombre;
             document.getElementById('modalPrecio').textContent = '₡' + almacigo.precio.toLocaleString() + ' por planta';
+            
             actualizarModalCantidad();
 
             document.getElementById('modalCantidad').classList.add('active');
+
+            // Dar foco y seleccionar texto del input para escribir de inmediato
+            setTimeout(() => {
+                const inputNum = document.getElementById('inputCantidadNum');
+                if (inputNum) {
+                    inputNum.focus();
+                    inputNum.select();
+                }
+            }, 50);
         }
 
         function cambiarCantidadModal(delta) {
-            cantidadModal = Math.max(1, cantidadModal + delta);
+            cantidadModal = Math.max(1, (parseInt(cantidadModal) || 1) + delta);
             actualizarModalCantidad();
         }
 
+        function fijarCantidadModal(val) {
+            cantidadModal = Math.max(1, parseInt(val) || 1);
+            actualizarModalCantidad();
+        }
+
+        function alCambiarInputCantidad(valor) {
+            const num = parseInt(valor);
+            if (!isNaN(num) && num > 0) {
+                cantidadModal = num;
+            } else if (valor === '') {
+                cantidadModal = 1;
+            }
+            const subtotal = almacigaModalSeleccionado ? almacigaModalSeleccionado.precio * cantidadModal : 0;
+            document.getElementById('modalSubtotal').textContent = 'Subtotal: ₡' + subtotal.toLocaleString();
+        }
+
         function actualizarModalCantidad() {
-            document.getElementById('modalCantidadNum').textContent = cantidadModal;
-            const subtotal = almacigaModalSeleccionado.precio * cantidadModal;
+            const inputNum = document.getElementById('inputCantidadNum');
+            if (inputNum) inputNum.value = cantidadModal;
+            const subtotal = almacigaModalSeleccionado ? almacigaModalSeleccionado.precio * cantidadModal : 0;
             document.getElementById('modalSubtotal').textContent = 'Subtotal: ₡' + subtotal.toLocaleString();
         }
 
@@ -1253,9 +1349,12 @@
         function agregarAlCarrito() {
             if (!almacigaModalSeleccionado) return;
 
+            const inputNum = document.getElementById('inputCantidadNum');
+            const cantFinal = Math.max(1, parseInt(inputNum.value) || cantidadModal || 1);
+
             const existente = carrito.find(c => c.almacigo_id === almacigaModalSeleccionado.id);
             if (existente) {
-                existente.cantidad = cantidadModal;
+                existente.cantidad = cantFinal;
             } else {
                 carrito.push({
                     almacigo_id: almacigaModalSeleccionado.id,
@@ -1263,13 +1362,13 @@
                     emoji: almacigaModalSeleccionado.emoji,
                     precio: almacigaModalSeleccionado.precio,
                     costo: almacigaModalSeleccionado.costo || 0,
-                    cantidad: cantidadModal
+                    cantidad: cantFinal
                 });
             }
 
             cerrarModal();
             renderGridVentas();
-            mostrarToast(`🛒 ${cantidadModal}× ${almacigaModalSeleccionado.nombre} al carrito`);
+            mostrarToast(`🛒 ${cantFinal}× ${almacigaModalSeleccionado.nombre} al carrito`);
         }
 
         function renderRegistroVentas() {
@@ -1516,6 +1615,107 @@
             setTimeout(() => toast.classList.remove('show'), 2200);
         }
 
+        // ===== EXPORTAR E IMPORTAR HISTORIAL =====
+        function exportarHistorial() {
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            if (historial.length === 0) {
+                mostrarToast('⚠️ No hay historial guardado para exportar');
+                return;
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historial, null, 2));
+            const dlAnchor = document.createElement('a');
+            const fechaStr = new Date().toISOString().split('T')[0];
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `feria_almacigos_historial_${fechaStr}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            mostrarToast('📤 Historial exportado en JSON');
+        }
+
+        function exportarHistorialCSV() {
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            if (historial.length === 0) {
+                mostrarToast('⚠️ No hay historial guardado para exportar');
+                return;
+            }
+
+            // Encabezados CSV (compatible con Excel con BOM UTF-8)
+            let csv = '\uFEFF"Fecha","Total Ventas (CRC)","Plantas Vendidas","Costo Total (CRC)","Ganancia (CRC)","Detalle"\n';
+
+            historial.forEach(dia => {
+                const total = dia.total || 0;
+                const unidades = dia.unidades || 0;
+                const costoTotal = dia.costoTotal || 0;
+                const ganancia = dia.ganancia != null ? dia.ganancia : (total - costoTotal);
+
+                // Resumen de almácigos
+                const partes = [];
+                (dia.ventas || []).forEach(t => {
+                    (t.items || []).forEach(item => {
+                        partes.push(`${item.nombre} x${item.cantidad}`);
+                    });
+                });
+                const detalleStr = partes.join('; ');
+
+                csv += `"${dia.fecha}",${total},${unidades},${costoTotal},${ganancia},"${detalleStr}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const dlAnchor = document.createElement('a');
+            const fechaStr = new Date().toISOString().split('T')[0];
+            dlAnchor.setAttribute("href", url);
+            dlAnchor.setAttribute("download", `feria_almacigos_resumen_${fechaStr}.csv`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            URL.revokeObjectURL(url);
+            mostrarToast('📊 Resumen exportado en CSV');
+        }
+
+        function importarHistorial(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!Array.isArray(data)) {
+                        throw new Error('El archivo no contiene una lista válida');
+                    }
+
+                    const confirmacion = confirm(`Se encontraron ${data.length} registros en el archivo.\n¿Deseas combinar con el historial actual (Aceptar) o reemplazarlo por completo (Cancelar = no hace nada)?`);
+                    if (!confirmacion) {
+                        event.target.value = '';
+                        return;
+                    }
+
+                    const historialActual = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+                    
+                    // Combinar evitando fechas duplicadas exactas o anexando
+                    const mapaPorFecha = {};
+                    historialActual.forEach(h => { mapaPorFecha[h.fecha] = h; });
+                    data.forEach(h => {
+                        if (h.fecha) mapaPorFecha[h.fecha] = h;
+                    });
+
+                    const combinado = Object.values(mapaPorFecha).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                    localStorage.setItem('feria_historial', JSON.stringify(combinado));
+
+                    renderHistorial();
+                    mostrarToast(`✅ Historial actualizado (${combinado.length} días)`);
+                } catch (err) {
+                    mostrarToast('❌ Error al leer el archivo JSON');
+                    console.error(err);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
         // ===== EVENT LISTENERS =====
         document.getElementById('inputCosto').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') agregarAlmacigo();
@@ -1526,6 +1726,16 @@
         document.getElementById('inputNombre').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('inputPrecio').focus();
         });
+
+        const inputCantModal = document.getElementById('inputCantidadNum');
+        if (inputCantModal) {
+            inputCantModal.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarAlCarrito();
+                }
+            });
+        }
 
         // Cerrar modales al tocar fuera
         document.getElementById('modalCantidad').addEventListener('click', function(e) {
