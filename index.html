@@ -140,6 +140,13 @@
             outline: none;
             border-color: var(--verde-claro);
         }
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
 
         .btn {
             display: inline-flex;
@@ -178,6 +185,11 @@
             width: auto;
             border-radius: 8px;
         }
+        .btn-naranja {
+            background: linear-gradient(135deg, var(--naranja) 0%, #ff9800 100%);
+            color: white;
+            box-shadow: 0 3px 10px rgba(239,108,0,0.3);
+        }
 
         /* ===== LISTA DE ALMÁCIGOS ===== */
         .almacigo-item {
@@ -203,7 +215,7 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
-        .almacigo-stock {
+        .almacigo-costo {
             color: #888;
             font-size: 0.8rem;
         }
@@ -235,6 +247,10 @@
             transition: all 0.15s;
             position: relative;
             overflow: hidden;
+        }
+        .venta-btn.en-carrito {
+            border-color: var(--naranja);
+            background: #fff3e0;
         }
         .venta-btn:active {
             transform: scale(0.95);
@@ -273,6 +289,21 @@
             font-size: 0.8rem;
             font-weight: 700;
         }
+        .venta-btn .vendidos-badge {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            background: var(--verde);
+            color: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
 
         .venta-btn.animacion-venta {
             animation: pulsoVenta 0.35s ease;
@@ -281,6 +312,49 @@
             0% { transform: scale(1); }
             50% { transform: scale(0.9); background: var(--verde-bg); border-color: var(--verde); }
             100% { transform: scale(1); }
+        }
+
+        /* ===== CARRITO ===== */
+        .carrito-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -3px 15px rgba(0,0,0,0.15);
+            padding: 12px 16px;
+            z-index: 150;
+            border-radius: 16px 16px 0 0;
+        }
+        .carrito-bar.active {
+            display: block;
+        }
+        .carrito-resumen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .carrito-items {
+            font-size: 0.85rem;
+            color: #555;
+            max-height: 80px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+        }
+        .carrito-item-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            text-transform: capitalize;
+        }
+        .carrito-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .carrito-actions .btn {
+            flex: 1;
         }
 
         /* ===== CANTIDAD MODAL ===== */
@@ -372,6 +446,30 @@
             margin-top: 8px;
             font-weight: 600;
         }
+        .ganancia-box {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e0e0e0;
+        }
+        .ganancia-item {
+            text-align: center;
+        }
+        .ganancia-item .ganancia-label {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        .ganancia-item .ganancia-valor {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .ganancia-item .ganancia-valor.costo {
+            color: var(--rojo);
+        }
+        .ganancia-item .ganancia-valor.ganancia {
+            color: var(--verde);
+        }
 
         .detalle-item {
             display: flex;
@@ -391,9 +489,15 @@
             color: #888;
             font-size: 0.85rem;
         }
+        .detalle-ganancia {
+            font-size: 0.8rem;
+            color: var(--verde);
+            font-weight: 600;
+        }
         .detalle-subtotal {
             font-weight: 700;
             color: var(--verde);
+            text-align: right;
         }
 
         /* ===== HISTORIAL ===== */
@@ -423,6 +527,11 @@
         .historial-unidades {
             font-size: 0.8rem;
             color: #888;
+        }
+        .historial-ganancia {
+            font-size: 0.8rem;
+            color: var(--verde);
+            font-weight: 600;
         }
 
         /* ===== REGISTRO DE VENTAS ===== */
@@ -459,6 +568,26 @@
         }
         .registro-venta .btn-undo:hover {
             color: var(--rojo);
+        }
+
+        /* ===== TRANSACCIÓN (venta multi-tipo) ===== */
+        .transaccion-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .transaccion-item:last-child {
+            border-bottom: none;
+        }
+        .transaccion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .transaccion-detalle {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: capitalize;
         }
 
         .empty-state {
@@ -606,9 +735,15 @@
                 <label>Nombre del almácigo</label>
                 <input type="text" id="inputNombre" placeholder="Ej: Lechuga, Tomate..." autocomplete="off">
             </div>
-            <div class="form-group">
-                <label>Precio por bandeja (₡)</label>
-                <input type="number" id="inputPrecio" placeholder="Ej: 500" min="0" step="50" inputmode="numeric">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio de venta (₡/planta)</label>
+                    <input type="number" id="inputPrecio" placeholder="Ej: 100" min="0" step="10" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label>Costo (₡/planta)</label>
+                    <input type="number" id="inputCosto" placeholder="Ej: 30" min="0" step="5" inputmode="numeric">
+                </div>
             </div>
             <button class="btn btn-primary" onclick="agregarAlmacigo()">
                 ➕ Agregar
@@ -642,6 +777,19 @@
             </div>
         </div>
 
+        <!-- Barra de carrito flotante -->
+        <div class="carrito-bar" id="carritoBar">
+            <div class="carrito-resumen">
+                <span style="font-weight:700;font-size:1rem;">🛒 Venta actual</span>
+                <span style="font-weight:800;font-size:1.2rem;color:var(--verde);" id="carritoTotal">₡0</span>
+            </div>
+            <div class="carrito-items" id="carritoItems"></div>
+            <div class="carrito-actions">
+                <button class="btn btn-outline btn-sm" onclick="limpiarCarrito()">✕ Limpiar</button>
+                <button class="btn btn-naranja btn-sm" style="flex:2;" onclick="confirmarVentaCarrito()">✅ Cobrar venta</button>
+            </div>
+        </div>
+
         <div class="card" style="margin-top:16px;">
             <h3>🧾 Últimas ventas</h3>
             <div id="registroVentas">
@@ -657,7 +805,17 @@
         <div class="card resumen-total">
             <div class="label">💰 Total vendido hoy</div>
             <div class="monto" id="resumenMonto">₡0</div>
-            <div class="cantidad-total" id="resumenCantidad">0 unidades vendidas</div>
+            <div class="cantidad-total" id="resumenCantidad">0 plantas vendidas</div>
+            <div class="ganancia-box" id="gananciaBox" style="display:none;">
+                <div class="ganancia-item">
+                    <div class="ganancia-label">Costo total</div>
+                    <div class="ganancia-valor costo" id="resumenCosto">₡0</div>
+                </div>
+                <div class="ganancia-item">
+                    <div class="ganancia-label">📈 Ganancia</div>
+                    <div class="ganancia-valor ganancia" id="resumenGanancia">₡0</div>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -709,7 +867,7 @@
             <div style="font-weight:700;color:var(--verde);font-size:1.3rem;margin-bottom:6px;" id="modalSubtotal"></div>
             <div class="modal-actions">
                 <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cancelar</button>
-                <button class="btn btn-primary btn-sm" onclick="confirmarVenta()">✅ Vender</button>
+                <button class="btn btn-naranja btn-sm" onclick="agregarAlCarrito()">🛒 Agregar</button>
             </div>
         </div>
     </div>
@@ -730,10 +888,15 @@
 
     <script>
         // ===== ESTADO DE LA APP =====
-        let almacigosHoy = [];    // { id, nombre, precio, emoji }
-        let ventasHoy = [];       // { id, almacigo_id, nombre, precio, cantidad, hora, timestamp }
+        // almacigosHoy: { id, nombre, precio, costo, emoji }
+        // ventasHoy (transacciones): { id, items: [{ almacigo_id, nombre, emoji, precio, costo, cantidad }], hora, timestamp, total }
+        let almacigosHoy = [];
+        let ventasHoy = [];
         let cantidadModal = 1;
         let almacigaModalSeleccionado = null;
+
+        // Carrito temporal para una venta multi-tipo
+        let carrito = []; // { almacigo_id, nombre, emoji, precio, costo, cantidad }
 
         const EMOJIS = {
             'lechuga': '🥬', 'tomate': '🍅', 'culantro': '🌿', 'cilantro': '🌿',
@@ -797,12 +960,22 @@
 
         function guardarEnHistorial(datosDia) {
             const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
-            const totalVentas = datosDia.ventas.reduce((s, v) => s + v.precio * v.cantidad, 0);
-            const totalUnidades = datosDia.ventas.reduce((s, v) => s + v.cantidad, 0);
+            let totalVentas = 0;
+            let totalUnidades = 0;
+            let totalCosto = 0;
+            (datosDia.ventas || []).forEach(t => {
+                (t.items || []).forEach(item => {
+                    totalVentas += item.precio * item.cantidad;
+                    totalUnidades += item.cantidad;
+                    totalCosto += (item.costo || 0) * item.cantidad;
+                });
+            });
             historial.unshift({
                 fecha: datosDia.fecha,
                 total: totalVentas,
                 unidades: totalUnidades,
+                costoTotal: totalCosto,
+                ganancia: totalVentas - totalCosto,
                 ventas: datosDia.ventas,
                 almacigos: datosDia.almacigos
             });
@@ -865,6 +1038,7 @@
         function agregarAlmacigo() {
             const nombre = document.getElementById('inputNombre').value.trim();
             const precio = parseInt(document.getElementById('inputPrecio').value);
+            const costo = parseInt(document.getElementById('inputCosto').value) || 0;
 
             if (!nombre) {
                 mostrarToast('⚠️ Escribe el nombre del almácigo');
@@ -885,6 +1059,7 @@
                 id: Date.now(),
                 nombre: nombre.toLowerCase(),
                 precio: precio,
+                costo: costo,
                 emoji: obtenerEmoji(nombre)
             };
 
@@ -893,6 +1068,7 @@
 
             document.getElementById('inputNombre').value = '';
             document.getElementById('inputPrecio').value = '';
+            document.getElementById('inputCosto').value = '';
             document.getElementById('inputNombre').focus();
 
             renderAlmacigos();
@@ -923,7 +1099,8 @@
                 <div class="almacigo-item">
                     <div class="almacigo-info">
                         <div class="almacigo-nombre">${a.emoji} ${a.nombre}</div>
-                        <div class="almacigo-precio">₡${a.precio.toLocaleString()}</div>
+                        <div class="almacigo-precio">₡${a.precio.toLocaleString()} / planta</div>
+                        ${a.costo > 0 ? `<div class="almacigo-costo">Costo: ₡${a.costo.toLocaleString()} · Ganancia: ₡${(a.precio - a.costo).toLocaleString()}</div>` : ''}
                     </div>
                     <button class="btn-delete" onclick="eliminarAlmacigo(${a.id})">✕</button>
                 </div>
@@ -940,10 +1117,21 @@
             }
 
             container.innerHTML = almacigosHoy.map(a => {
-                const vendidos = ventasHoy.filter(v => v.almacigo_id === a.id).reduce((s, v) => s + v.cantidad, 0);
+                // Total vendido de este tipo
+                let vendidos = 0;
+                ventasHoy.forEach(t => {
+                    (t.items || []).forEach(item => {
+                        if (item.almacigo_id === a.id) vendidos += item.cantidad;
+                    });
+                });
+                // En carrito actual
+                const enCarrito = carrito.find(c => c.almacigo_id === a.id);
+                const cantCarrito = enCarrito ? enCarrito.cantidad : 0;
+
                 return `
-                    <div class="venta-btn" id="venta-btn-${a.id}" onclick="abrirModalVenta(${a.id})">
-                        ${vendidos > 0 ? `<div class="cantidad-badge">${vendidos}</div>` : ''}
+                    <div class="venta-btn ${cantCarrito > 0 ? 'en-carrito' : ''}" id="venta-btn-${a.id}" onclick="abrirModalVenta(${a.id})">
+                        ${vendidos > 0 ? `<div class="vendidos-badge">${vendidos}</div>` : ''}
+                        ${cantCarrito > 0 ? `<div class="cantidad-badge">${cantCarrito}</div>` : ''}
                         <span class="emoji">${a.emoji}</span>
                         <div class="nombre">${a.nombre}</div>
                         <div class="precio">₡${a.precio.toLocaleString()}</div>
@@ -952,11 +1140,80 @@
             }).join('');
 
             actualizarTotalRapido();
+            renderCarritoBar();
         }
 
         function actualizarTotalRapido() {
-            const total = ventasHoy.reduce((s, v) => s + v.precio * v.cantidad, 0);
+            let total = 0;
+            ventasHoy.forEach(t => {
+                (t.items || []).forEach(item => {
+                    total += item.precio * item.cantidad;
+                });
+            });
             document.getElementById('totalRapido').textContent = '₡' + total.toLocaleString();
+        }
+
+        // ===== CARRITO =====
+        function renderCarritoBar() {
+            const bar = document.getElementById('carritoBar');
+            if (carrito.length === 0) {
+                bar.classList.remove('active');
+                return;
+            }
+            bar.classList.add('active');
+
+            let totalCarrito = 0;
+            carrito.forEach(c => totalCarrito += c.precio * c.cantidad);
+
+            document.getElementById('carritoTotal').textContent = '₡' + totalCarrito.toLocaleString();
+
+            document.getElementById('carritoItems').innerHTML = carrito.map(c =>
+                `<div class="carrito-item-line">
+                    <span>${c.emoji} ${c.nombre} × ${c.cantidad}</span>
+                    <span>₡${(c.precio * c.cantidad).toLocaleString()}</span>
+                </div>`
+            ).join('');
+        }
+
+        function limpiarCarrito() {
+            carrito = [];
+            renderGridVentas();
+        }
+
+        function confirmarVentaCarrito() {
+            if (carrito.length === 0) return;
+
+            const ahora = new Date();
+            let totalVenta = 0;
+            carrito.forEach(c => totalVenta += c.precio * c.cantidad);
+
+            const transaccion = {
+                id: Date.now(),
+                items: carrito.map(c => ({ ...c })),
+                hora: ahora.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: ahora.getTime(),
+                total: totalVenta
+            };
+
+            ventasHoy.push(transaccion);
+            guardarDatos();
+
+            // Animación en los botones
+            carrito.forEach(c => {
+                const btn = document.getElementById('venta-btn-' + c.almacigo_id);
+                if (btn) {
+                    btn.classList.add('animacion-venta');
+                    setTimeout(() => btn.classList.remove('animacion-venta'), 400);
+                }
+            });
+
+            const totalItems = carrito.reduce((s, c) => s + c.cantidad, 0);
+            const tiposStr = carrito.map(c => c.nombre).join(', ');
+            mostrarToast(`✅ ${totalItems} plantas vendidas = ₡${totalVenta.toLocaleString()}`);
+
+            carrito = [];
+            renderGridVentas();
+            renderRegistroVentas();
         }
 
         // ===== MODAL DE VENTA =====
@@ -965,10 +1222,13 @@
             if (!almacigo) return;
 
             almacigaModalSeleccionado = almacigo;
-            cantidadModal = 1;
+
+            // Si ya está en el carrito, editar esa cantidad
+            const enCarrito = carrito.find(c => c.almacigo_id === id);
+            cantidadModal = enCarrito ? enCarrito.cantidad : 1;
 
             document.getElementById('modalNombre').textContent = almacigo.emoji + ' ' + almacigo.nombre;
-            document.getElementById('modalPrecio').textContent = '₡' + almacigo.precio.toLocaleString() + ' por bandeja';
+            document.getElementById('modalPrecio').textContent = '₡' + almacigo.precio.toLocaleString() + ' por planta';
             actualizarModalCantidad();
 
             document.getElementById('modalCantidad').classList.add('active');
@@ -982,7 +1242,7 @@
         function actualizarModalCantidad() {
             document.getElementById('modalCantidadNum').textContent = cantidadModal;
             const subtotal = almacigaModalSeleccionado.precio * cantidadModal;
-            document.getElementById('modalSubtotal').textContent = 'Total: ₡' + subtotal.toLocaleString();
+            document.getElementById('modalSubtotal').textContent = 'Subtotal: ₡' + subtotal.toLocaleString();
         }
 
         function cerrarModal() {
@@ -990,37 +1250,26 @@
             almacigaModalSeleccionado = null;
         }
 
-        function confirmarVenta() {
+        function agregarAlCarrito() {
             if (!almacigaModalSeleccionado) return;
 
-            const ahora = new Date();
-            const venta = {
-                id: Date.now(),
-                almacigo_id: almacigaModalSeleccionado.id,
-                nombre: almacigaModalSeleccionado.nombre,
-                emoji: almacigaModalSeleccionado.emoji,
-                precio: almacigaModalSeleccionado.precio,
-                cantidad: cantidadModal,
-                hora: ahora.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' }),
-                timestamp: ahora.getTime()
-            };
-
-            ventasHoy.push(venta);
-            guardarDatos();
-
-            // Animación
-            const btn = document.getElementById('venta-btn-' + almacigaModalSeleccionado.id);
-            if (btn) {
-                btn.classList.add('animacion-venta');
-                setTimeout(() => btn.classList.remove('animacion-venta'), 400);
+            const existente = carrito.find(c => c.almacigo_id === almacigaModalSeleccionado.id);
+            if (existente) {
+                existente.cantidad = cantidadModal;
+            } else {
+                carrito.push({
+                    almacigo_id: almacigaModalSeleccionado.id,
+                    nombre: almacigaModalSeleccionado.nombre,
+                    emoji: almacigaModalSeleccionado.emoji,
+                    precio: almacigaModalSeleccionado.precio,
+                    costo: almacigaModalSeleccionado.costo || 0,
+                    cantidad: cantidadModal
+                });
             }
 
             cerrarModal();
             renderGridVentas();
-            renderRegistroVentas();
-
-            const subtotal = venta.precio * venta.cantidad;
-            mostrarToast(`✅ ${venta.cantidad}x ${venta.nombre} = ₡${subtotal.toLocaleString()}`);
+            mostrarToast(`🛒 ${cantidadModal}× ${almacigaModalSeleccionado.nombre} al carrito`);
         }
 
         function renderRegistroVentas() {
@@ -1031,18 +1280,21 @@
             }
 
             const ultimas = [...ventasHoy].reverse().slice(0, 15);
-            container.innerHTML = ultimas.map(v => `
-                <div class="registro-venta">
-                    <span class="hora">${v.hora}</span>
-                    <span class="desc">${v.emoji} ${v.nombre} ×${v.cantidad}</span>
-                    <span class="monto">₡${(v.precio * v.cantidad).toLocaleString()}</span>
-                    <button class="btn-undo" onclick="deshacerVenta(${v.id})" title="Deshacer">↩️</button>
-                </div>
-            `).join('');
+            container.innerHTML = ultimas.map(t => {
+                const desc = t.items.map(item => `${item.emoji} ${item.nombre} ×${item.cantidad}`).join(', ');
+                return `
+                    <div class="registro-venta">
+                        <span class="hora">${t.hora}</span>
+                        <span class="desc">${desc}</span>
+                        <span class="monto">₡${t.total.toLocaleString()}</span>
+                        <button class="btn-undo" onclick="deshacerVenta(${t.id})" title="Deshacer">↩️</button>
+                    </div>
+                `;
+            }).join('');
         }
 
         function deshacerVenta(id) {
-            ventasHoy = ventasHoy.filter(v => v.id !== id);
+            ventasHoy = ventasHoy.filter(t => t.id !== id);
             guardarDatos();
             renderGridVentas();
             renderRegistroVentas();
@@ -1051,11 +1303,32 @@
 
         // ===== RESUMEN =====
         function renderResumen() {
-            const total = ventasHoy.reduce((s, v) => s + v.precio * v.cantidad, 0);
-            const unidades = ventasHoy.reduce((s, v) => s + v.cantidad, 0);
+            let total = 0;
+            let unidades = 0;
+            let costoTotal = 0;
+
+            ventasHoy.forEach(t => {
+                (t.items || []).forEach(item => {
+                    total += item.precio * item.cantidad;
+                    unidades += item.cantidad;
+                    costoTotal += (item.costo || 0) * item.cantidad;
+                });
+            });
+
+            const ganancia = total - costoTotal;
 
             document.getElementById('resumenMonto').textContent = '₡' + total.toLocaleString();
-            document.getElementById('resumenCantidad').textContent = unidades + ' bandeja' + (unidades !== 1 ? 's' : '') + ' vendida' + (unidades !== 1 ? 's' : '');
+            document.getElementById('resumenCantidad').textContent = unidades + ' planta' + (unidades !== 1 ? 's' : '') + ' vendida' + (unidades !== 1 ? 's' : '');
+
+            // Mostrar ganancia si hay costos registrados
+            const gananciaBox = document.getElementById('gananciaBox');
+            if (costoTotal > 0) {
+                gananciaBox.style.display = 'flex';
+                document.getElementById('resumenCosto').textContent = '₡' + costoTotal.toLocaleString();
+                document.getElementById('resumenGanancia').textContent = '₡' + ganancia.toLocaleString();
+            } else {
+                gananciaBox.style.display = 'none';
+            }
 
             // Detalle por almácigo
             const detalleContainer = document.getElementById('resumenDetalle');
@@ -1063,39 +1336,49 @@
                 detalleContainer.innerHTML = '<div class="empty-state" style="padding:16px;"><p>Aún no hay ventas registradas</p></div>';
             } else {
                 const porAlmacigo = {};
-                ventasHoy.forEach(v => {
-                    if (!porAlmacigo[v.nombre]) {
-                        porAlmacigo[v.nombre] = { emoji: v.emoji, cantidad: 0, total: 0, precio: v.precio };
-                    }
-                    porAlmacigo[v.nombre].cantidad += v.cantidad;
-                    porAlmacigo[v.nombre].total += v.precio * v.cantidad;
+                ventasHoy.forEach(t => {
+                    (t.items || []).forEach(item => {
+                        if (!porAlmacigo[item.nombre]) {
+                            porAlmacigo[item.nombre] = { emoji: item.emoji, cantidad: 0, total: 0, costoTotal: 0, precio: item.precio, costo: item.costo || 0 };
+                        }
+                        porAlmacigo[item.nombre].cantidad += item.cantidad;
+                        porAlmacigo[item.nombre].total += item.precio * item.cantidad;
+                        porAlmacigo[item.nombre].costoTotal += (item.costo || 0) * item.cantidad;
+                    });
                 });
 
                 detalleContainer.innerHTML = Object.entries(porAlmacigo)
                     .sort((a, b) => b[1].total - a[1].total)
-                    .map(([nombre, d]) => `
-                        <div class="detalle-item">
-                            <div>
-                                <div class="detalle-nombre">${d.emoji} ${nombre}</div>
-                                <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                    .map(([nombre, d]) => {
+                        const gananciaItem = d.total - d.costoTotal;
+                        return `
+                            <div class="detalle-item">
+                                <div>
+                                    <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                                    <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                                    ${d.costoTotal > 0 ? `<div class="detalle-ganancia">Ganancia: ₡${gananciaItem.toLocaleString()}</div>` : ''}
+                                </div>
+                                <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
                             </div>
-                            <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
             }
 
-            // Registro completo
+            // Registro completo de transacciones
             const regContainer = document.getElementById('resumenRegistro');
             if (ventasHoy.length === 0) {
                 regContainer.innerHTML = '<div class="empty-state" style="padding:16px;"><p>Aún no hay ventas registradas</p></div>';
             } else {
-                regContainer.innerHTML = [...ventasHoy].reverse().map(v => `
-                    <div class="registro-venta">
-                        <span class="hora">${v.hora}</span>
-                        <span class="desc">${v.emoji} ${v.nombre} ×${v.cantidad}</span>
-                        <span class="monto">₡${(v.precio * v.cantidad).toLocaleString()}</span>
-                    </div>
-                `).join('');
+                regContainer.innerHTML = [...ventasHoy].reverse().map(t => {
+                    const desc = t.items.map(item => `${item.emoji} ${item.nombre} ×${item.cantidad}`).join(', ');
+                    return `
+                        <div class="registro-venta">
+                            <span class="hora">${t.hora}</span>
+                            <span class="desc">${desc}</span>
+                            <span class="monto">₡${t.total.toLocaleString()}</span>
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
@@ -1140,11 +1423,15 @@
             container.innerHTML = historial.map((dia, i) => {
                 const fecha = new Date(dia.fecha + 'T12:00:00');
                 const opciones = { weekday: 'short', day: 'numeric', month: 'short' };
+                const gananciaStr = dia.ganancia != null && dia.costoTotal > 0
+                    ? `<div class="historial-ganancia">📈 Ganancia: ₡${dia.ganancia.toLocaleString()}</div>`
+                    : '';
                 return `
                     <div class="historial-item" onclick="verDetalleHistorial(${i})">
                         <div>
                             <div class="historial-fecha">${fecha.toLocaleDateString('es-CR', opciones)}</div>
-                            <div class="historial-unidades">${dia.unidades} bandejas</div>
+                            <div class="historial-unidades">${dia.unidades} plantas</div>
+                            ${gananciaStr}
                         </div>
                         <div class="historial-total">₡${dia.total.toLocaleString()}</div>
                     </div>
@@ -1163,33 +1450,55 @@
 
             // Agrupar por almácigo
             const porAlmacigo = {};
-            (dia.ventas || []).forEach(v => {
-                if (!porAlmacigo[v.nombre]) {
-                    porAlmacigo[v.nombre] = { emoji: v.emoji || '🌱', cantidad: 0, total: 0, precio: v.precio };
-                }
-                porAlmacigo[v.nombre].cantidad += v.cantidad;
-                porAlmacigo[v.nombre].total += v.precio * v.cantidad;
+            (dia.ventas || []).forEach(t => {
+                (t.items || []).forEach(item => {
+                    if (!porAlmacigo[item.nombre]) {
+                        porAlmacigo[item.nombre] = { emoji: item.emoji || '🌱', cantidad: 0, total: 0, costoTotal: 0, precio: item.precio, costo: item.costo || 0 };
+                    }
+                    porAlmacigo[item.nombre].cantidad += item.cantidad;
+                    porAlmacigo[item.nombre].total += item.precio * item.cantidad;
+                    porAlmacigo[item.nombre].costoTotal += (item.costo || 0) * item.cantidad;
+                });
             });
+
+            const costoTotal = dia.costoTotal || 0;
+            const ganancia = dia.ganancia || (dia.total - costoTotal);
 
             let html = `
                 <div class="resumen-total" style="padding:16px;">
                     <div class="label">Total del día</div>
                     <div class="monto" style="font-size:2.2rem;">₡${dia.total.toLocaleString()}</div>
-                    <div class="cantidad-total">${dia.unidades} bandejas</div>
+                    <div class="cantidad-total">${dia.unidades} plantas</div>
+                    ${costoTotal > 0 ? `
+                    <div class="ganancia-box">
+                        <div class="ganancia-item">
+                            <div class="ganancia-label">Costo</div>
+                            <div class="ganancia-valor costo">₡${costoTotal.toLocaleString()}</div>
+                        </div>
+                        <div class="ganancia-item">
+                            <div class="ganancia-label">📈 Ganancia</div>
+                            <div class="ganancia-valor ganancia">₡${ganancia.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             `;
 
             html += Object.entries(porAlmacigo)
                 .sort((a, b) => b[1].total - a[1].total)
-                .map(([nombre, d]) => `
-                    <div class="detalle-item">
-                        <div>
-                            <div class="detalle-nombre">${d.emoji} ${nombre}</div>
-                            <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                .map(([nombre, d]) => {
+                    const gananciaItem = d.total - d.costoTotal;
+                    return `
+                        <div class="detalle-item">
+                            <div>
+                                <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                                <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                                ${d.costoTotal > 0 ? `<div class="detalle-ganancia">Ganancia: ₡${gananciaItem.toLocaleString()}</div>` : ''}
+                            </div>
+                            <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
                         </div>
-                        <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
             document.getElementById('modalHistorialContenido').innerHTML = html;
             document.getElementById('modalHistorial').classList.add('active');
@@ -1208,8 +1517,11 @@
         }
 
         // ===== EVENT LISTENERS =====
-        document.getElementById('inputPrecio').addEventListener('keydown', function(e) {
+        document.getElementById('inputCosto').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') agregarAlmacigo();
+        });
+        document.getElementById('inputPrecio').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('inputCosto').focus();
         });
         document.getElementById('inputNombre').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('inputPrecio').focus();
