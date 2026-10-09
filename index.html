@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌱 Mi Feria - Almácigos</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <style>
+        :root {
+            --verde: #2e7d32;
+            --verde-claro: #4caf50;
+            --verde-bg: #e8f5e9;
+            --naranja: #ef6c00;
+            --rojo: #c62828;
+            --gris: #f5f5f5;
+            --sombra: 0 2px 8px rgba(0,0,0,0.12);
+            --radio: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 80px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+            color: white;
+            padding: 18px 20px 14px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .header .fecha {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* ===== NAVEGACIÓN ===== */
+        .nav {
+            display: flex;
+            gap: 0;
+            background: white;
+            box-shadow: var(--sombra);
+            position: sticky;
+            top: 68px;
+            z-index: 99;
+        }
+        .nav button {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            background: white;
+            color: #888;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav button.active {
+            color: var(--verde);
+            border-bottom-color: var(--verde);
+            background: var(--verde-bg);
+        }
+        .nav button .nav-icon {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        /* ===== CONTENIDO ===== */
+        .page {
+            display: none;
+            padding: 16px;
+            animation: fadeIn 0.25s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== TARJETAS ===== */
+        .card {
+            background: white;
+            border-radius: var(--radio);
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: var(--sombra);
+        }
+        .card h3 {
+            color: var(--verde);
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== FORMULARIO ===== */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--verde-claro);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+            color: white;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.3);
+        }
+        .btn-danger {
+            background: var(--rojo);
+            color: white;
+        }
+        .btn-outline {
+            background: white;
+            color: var(--verde);
+            border: 2px solid var(--verde);
+        }
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            width: auto;
+            border-radius: 8px;
+        }
+
+        /* ===== LISTA DE ALMÁCIGOS ===== */
+        .almacigo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .almacigo-item:last-child {
+            border-bottom: none;
+        }
+        .almacigo-info {
+            flex: 1;
+        }
+        .almacigo-nombre {
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: capitalize;
+        }
+        .almacigo-precio {
+            color: var(--verde);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .almacigo-stock {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .btn-delete:hover {
+            color: var(--rojo);
+        }
+
+        /* ===== VENTA RÁPIDA ===== */
+        .venta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .venta-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--radio);
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .venta-btn:active {
+            transform: scale(0.95);
+            border-color: var(--verde-claro);
+            background: var(--verde-bg);
+        }
+        .venta-btn .emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .venta-btn .nombre {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #333;
+            text-transform: capitalize;
+        }
+        .venta-btn .precio {
+            color: var(--verde);
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 4px;
+        }
+        .venta-btn .cantidad-badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: var(--naranja);
+            color: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .venta-btn.animacion-venta {
+            animation: pulsoVenta 0.35s ease;
+        }
+        @keyframes pulsoVenta {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); background: var(--verde-bg); border-color: var(--verde); }
+            100% { transform: scale(1); }
+        }
+
+        /* ===== CANTIDAD MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: var(--radio);
+            padding: 24px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .modal h3 {
+            margin-bottom: 6px;
+            color: var(--verde);
+        }
+        .modal .modal-precio {
+            color: #888;
+            margin-bottom: 18px;
+        }
+        .cantidad-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 18px 0;
+        }
+        .cantidad-selector button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--verde);
+            background: white;
+            color: var(--verde);
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .cantidad-selector button:active {
+            background: var(--verde);
+            color: white;
+        }
+        .cantidad-selector .cantidad-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            min-width: 60px;
+            color: var(--verde);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* ===== RESUMEN ===== */
+        .resumen-total {
+            text-align: center;
+            padding: 24px;
+        }
+        .resumen-total .monto {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--verde);
+        }
+        .resumen-total .label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .resumen-total .cantidad-total {
+            font-size: 1.1rem;
+            color: #555;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .detalle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detalle-item:last-child {
+            border-bottom: none;
+        }
+        .detalle-nombre {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .detalle-cant {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .detalle-subtotal {
+            font-weight: 700;
+            color: var(--verde);
+        }
+
+        /* ===== HISTORIAL ===== */
+        .historial-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: var(--sombra);
+            transition: all 0.15s;
+        }
+        .historial-item:active {
+            transform: scale(0.98);
+        }
+        .historial-fecha {
+            font-weight: 600;
+        }
+        .historial-total {
+            font-weight: 800;
+            color: var(--verde);
+            font-size: 1.1rem;
+        }
+        .historial-unidades {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* ===== REGISTRO DE VENTAS ===== */
+        .registro-venta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.9rem;
+        }
+        .registro-venta .hora {
+            color: #aaa;
+            font-size: 0.8rem;
+            min-width: 50px;
+        }
+        .registro-venta .desc {
+            flex: 1;
+            margin: 0 8px;
+            text-transform: capitalize;
+        }
+        .registro-venta .monto {
+            font-weight: 700;
+            color: var(--verde);
+        }
+        .registro-venta .btn-undo {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            margin-left: 6px;
+        }
+        .registro-venta .btn-undo:hover {
+            color: var(--rojo);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+        .empty-state .emoji-big {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+
+        /* ===== HISTORIAL DETALLE MODAL ===== */
+        .detalle-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .detalle-modal-overlay.active {
+            display: flex;
+        }
+        .detalle-modal {
+            background: white;
+            border-radius: var(--radio) var(--radio) 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
+        }
+        .detalle-modal h3 {
+            color: var(--verde);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detalle-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+
+        /* ===== SUGERENCIAS ===== */
+        .sugerencias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .sugerencia-chip {
+            background: var(--verde-bg);
+            border: 1px solid #c8e6c9;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--verde);
+            font-weight: 500;
+        }
+        .sugerencia-chip:active {
+            background: var(--verde);
+            color: white;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 300;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Ajuste para pantallas muy pequeñas */
+        @media (max-width: 360px) {
+            .venta-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .venta-btn {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>🌱 Mi Feria</h1>
+        <div class="fecha" id="fechaHoy"></div>
+    </div>
+
+    <!-- NAVEGACIÓN -->
+    <div class="nav">
+        <button class="active" onclick="cambiarPagina('preparar', this)">
+            <span class="nav-icon">📦</span>
+            Preparar
+        </button>
+        <button onclick="cambiarPagina('vender', this)">
+            <span class="nav-icon">💰</span>
+            Vender
+        </button>
+        <button onclick="cambiarPagina('resumen', this)">
+            <span class="nav-icon">📊</span>
+            Resumen
+        </button>
+        <button onclick="cambiarPagina('historial', this)">
+            <span class="nav-icon">📅</span>
+            Historial
+        </button>
+    </div>
+
+    <!-- ===================== PÁGINA: PREPARAR ===================== -->
+    <div class="page active" id="page-preparar">
+        <div class="card">
+            <h3>📦 Agregar Almácigo</h3>
+
+            <div class="sugerencias" id="sugerencias"></div>
+
+            <div class="form-group">
+                <label>Nombre del almácigo</label>
+                <input type="text" id="inputNombre" placeholder="Ej: Lechuga, Tomate..." autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Precio por bandeja (₡)</label>
+                <input type="number" id="inputPrecio" placeholder="Ej: 500" min="0" step="50" inputmode="numeric">
+            </div>
+            <button class="btn btn-primary" onclick="agregarAlmacigo()">
+                ➕ Agregar
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>🌿 Almácigos de hoy <span id="contadorAlmacigos" style="background:var(--verde-bg);padding:2px 10px;border-radius:20px;font-size:0.8rem;"></span></h3>
+            <div id="listaAlmacigos">
+                <div class="empty-state">
+                    <div class="emoji-big">📦</div>
+                    <p>Agrega los almácigos que llevarás hoy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== PÁGINA: VENDER ===================== -->
+    <div class="page" id="page-vender">
+        <div class="card" style="padding:12px 18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;color:#888;">Total del día:</span>
+                <span style="font-weight:800;font-size:1.4rem;color:var(--verde);" id="totalRapido">₡0</span>
+            </div>
+        </div>
+
+        <div id="gridVentas" class="venta-grid">
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <div class="emoji-big">🌱</div>
+                <p>Primero agrega almácigos en la pestaña <strong>Preparar</strong></p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <h3>🧾 Últimas ventas</h3>
+            <div id="registroVentas">
+                <div class="empty-state" style="padding:16px;">
+                    <p>Las ventas aparecerán aquí</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== PÁGINA: RESUMEN ===================== -->
+    <div class="page" id="page-resumen">
+        <div class="card resumen-total">
+            <div class="label">💰 Total vendido hoy</div>
+            <div class="monto" id="resumenMonto">₡0</div>
+            <div class="cantidad-total" id="resumenCantidad">0 unidades vendidas</div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Detalle por almácigo</h3>
+            <div id="resumenDetalle">
+                <div class="empty-state" style="padding:16px;">
+                    <p>Aún no hay ventas registradas</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🕐 Registro de ventas</h3>
+            <div id="resumenRegistro">
+                <div class="empty-state" style="padding:16px;">
+                    <p>Aún no hay ventas registradas</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-outline" style="margin-top:8px;" onclick="cerrarDia()">
+            📅 Cerrar día y guardar en historial
+        </button>
+    </div>
+
+    <!-- ===================== PÁGINA: HISTORIAL ===================== -->
+    <div class="page" id="page-historial">
+        <div class="card">
+            <h3>📅 Días anteriores</h3>
+            <div id="listaHistorial">
+                <div class="empty-state">
+                    <div class="emoji-big">📅</div>
+                    <p>El historial de ferias aparecerá aquí</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CANTIDAD ===== -->
+    <div class="modal-overlay" id="modalCantidad">
+        <div class="modal">
+            <h3 id="modalNombre"></h3>
+            <div class="modal-precio" id="modalPrecio"></div>
+            <div class="cantidad-selector">
+                <button onclick="cambiarCantidadModal(-1)">−</button>
+                <div class="cantidad-num" id="modalCantidadNum">1</div>
+                <button onclick="cambiarCantidadModal(1)">+</button>
+            </div>
+            <div style="font-weight:700;color:var(--verde);font-size:1.3rem;margin-bottom:6px;" id="modalSubtotal"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-primary btn-sm" onclick="confirmarVenta()">✅ Vender</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DETALLE HISTORIAL ===== -->
+    <div class="detalle-modal-overlay" id="modalHistorial">
+        <div class="detalle-modal">
+            <h3>
+                <span id="modalHistorialTitulo"></span>
+                <button class="close-btn" onclick="cerrarModalHistorial()">✕</button>
+            </h3>
+            <div id="modalHistorialContenido"></div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== ESTADO DE LA APP =====
+        let almacigosHoy = [];    // { id, nombre, precio, emoji }
+        let ventasHoy = [];       // { id, almacigo_id, nombre, precio, cantidad, hora, timestamp }
+        let cantidadModal = 1;
+        let almacigaModalSeleccionado = null;
+
+        const EMOJIS = {
+            'lechuga': '🥬', 'tomate': '🍅', 'culantro': '🌿', 'cilantro': '🌿',
+            'apio': '🥒', 'cebollino': '🧅', 'cebolla': '🧅', 'pepino': '🥒',
+            'chile': '🌶️', 'perejil': '🌿', 'albahaca': '🌿', 'repollo': '🥬',
+            'brócoli': '🥦', 'brocoli': '🥦', 'zanahoria': '🥕', 'rábano': '🌱',
+            'rabano': '🌱', 'espinaca': '🥬', 'remolacha': '🌱', 'coliflor': '🥦',
+            'pimiento': '🫑', 'berenjena': '🍆', 'acelga': '🥬', 'chayote': '🌱',
+            'hierbabuena': '🌿', 'romero': '🌿', 'tomillo': '🌿', 'orégano': '🌿',
+            'oregano': '🌿', 'menta': '🌿', 'rúcula': '🥬', 'rucula': '🥬',
+        };
+
+        const SUGERENCIAS_BASE = ['Lechuga', 'Tomate', 'Culantro', 'Apio', 'Cebollino', 'Chile', 'Pepino', 'Repollo', 'Brócoli', 'Perejil'];
+
+        // ===== INICIALIZACIÓN =====
+        function init() {
+            mostrarFecha();
+            cargarDatos();
+            renderSugerencias();
+            renderAlmacigos();
+            renderGridVentas();
+            renderResumen();
+            renderHistorial();
+        }
+
+        function mostrarFecha() {
+            const hoy = new Date();
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fechaHoy').textContent = hoy.toLocaleDateString('es-CR', opciones);
+        }
+
+        // ===== PERSISTENCIA (localStorage) =====
+        function guardarDatos() {
+            const datos = {
+                almacigos: almacigosHoy,
+                ventas: ventasHoy,
+                fecha: new Date().toISOString().split('T')[0]
+            };
+            localStorage.setItem('feria_hoy', JSON.stringify(datos));
+        }
+
+        function cargarDatos() {
+            const raw = localStorage.getItem('feria_hoy');
+            if (raw) {
+                const datos = JSON.parse(raw);
+                const hoy = new Date().toISOString().split('T')[0];
+                if (datos.fecha === hoy) {
+                    almacigosHoy = datos.almacigos || [];
+                    ventasHoy = datos.ventas || [];
+                } else {
+                    // Día diferente: auto-guardar día anterior si tiene ventas
+                    if (datos.ventas && datos.ventas.length > 0) {
+                        guardarEnHistorial(datos);
+                    }
+                    almacigosHoy = [];
+                    ventasHoy = [];
+                    guardarDatos();
+                }
+            }
+        }
+
+        function guardarEnHistorial(datosDia) {
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const totalVentas = datosDia.ventas.reduce((s, v) => s + v.precio * v.cantidad, 0);
+            const totalUnidades = datosDia.ventas.reduce((s, v) => s + v.cantidad, 0);
+            historial.unshift({
+                fecha: datosDia.fecha,
+                total: totalVentas,
+                unidades: totalUnidades,
+                ventas: datosDia.ventas,
+                almacigos: datosDia.almacigos
+            });
+            localStorage.setItem('feria_historial', JSON.stringify(historial));
+        }
+
+        // ===== NAVEGACIÓN =====
+        function cambiarPagina(pagina, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById('page-' + pagina).classList.add('active');
+            btn.classList.add('active');
+
+            if (pagina === 'vender') renderGridVentas();
+            if (pagina === 'resumen') renderResumen();
+            if (pagina === 'historial') renderHistorial();
+        }
+
+        // ===== SUGERENCIAS =====
+        function renderSugerencias() {
+            // Obtener almácigos usados del historial
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const nombresUsados = new Set();
+            historial.forEach(dia => {
+                (dia.almacigos || []).forEach(a => nombresUsados.add(a.nombre.toLowerCase()));
+            });
+
+            let sugerencias = [...SUGERENCIAS_BASE];
+            nombresUsados.forEach(n => {
+                if (!sugerencias.map(s => s.toLowerCase()).includes(n)) {
+                    sugerencias.push(n.charAt(0).toUpperCase() + n.slice(1));
+                }
+            });
+
+            // Filtrar los que ya están agregados hoy
+            const hoyNombres = almacigosHoy.map(a => a.nombre.toLowerCase());
+            sugerencias = sugerencias.filter(s => !hoyNombres.includes(s.toLowerCase()));
+
+            const container = document.getElementById('sugerencias');
+            container.innerHTML = sugerencias.slice(0, 12).map(s =>
+                `<span class="sugerencia-chip" onclick="usarSugerencia('${s}')">${obtenerEmoji(s)} ${s}</span>`
+            ).join('');
+        }
+
+        function usarSugerencia(nombre) {
+            document.getElementById('inputNombre').value = nombre;
+            document.getElementById('inputPrecio').focus();
+        }
+
+        // ===== ALMÁCIGOS =====
+        function obtenerEmoji(nombre) {
+            const key = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            for (const [k, v] of Object.entries(EMOJIS)) {
+                const kn = k.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (key.includes(kn) || kn.includes(key)) return v;
+            }
+            return '🌱';
+        }
+
+        function agregarAlmacigo() {
+            const nombre = document.getElementById('inputNombre').value.trim();
+            const precio = parseInt(document.getElementById('inputPrecio').value);
+
+            if (!nombre) {
+                mostrarToast('⚠️ Escribe el nombre del almácigo');
+                return;
+            }
+            if (!precio || precio <= 0) {
+                mostrarToast('⚠️ Escribe un precio válido');
+                return;
+            }
+
+            // Verificar duplicado
+            if (almacigosHoy.some(a => a.nombre.toLowerCase() === nombre.toLowerCase())) {
+                mostrarToast('⚠️ Ese almácigo ya está en la lista');
+                return;
+            }
+
+            const almacigo = {
+                id: Date.now(),
+                nombre: nombre.toLowerCase(),
+                precio: precio,
+                emoji: obtenerEmoji(nombre)
+            };
+
+            almacigosHoy.push(almacigo);
+            guardarDatos();
+
+            document.getElementById('inputNombre').value = '';
+            document.getElementById('inputPrecio').value = '';
+            document.getElementById('inputNombre').focus();
+
+            renderAlmacigos();
+            renderSugerencias();
+            mostrarToast(`✅ ${nombre} agregado`);
+        }
+
+        function eliminarAlmacigo(id) {
+            almacigosHoy = almacigosHoy.filter(a => a.id !== id);
+            guardarDatos();
+            renderAlmacigos();
+            renderSugerencias();
+            renderGridVentas();
+        }
+
+        function renderAlmacigos() {
+            const container = document.getElementById('listaAlmacigos');
+            const contador = document.getElementById('contadorAlmacigos');
+
+            if (almacigosHoy.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="emoji-big">📦</div><p>Agrega los almácigos que llevarás hoy</p></div>';
+                contador.textContent = '';
+                return;
+            }
+
+            contador.textContent = almacigosHoy.length;
+            container.innerHTML = almacigosHoy.map(a => `
+                <div class="almacigo-item">
+                    <div class="almacigo-info">
+                        <div class="almacigo-nombre">${a.emoji} ${a.nombre}</div>
+                        <div class="almacigo-precio">₡${a.precio.toLocaleString()}</div>
+                    </div>
+                    <button class="btn-delete" onclick="eliminarAlmacigo(${a.id})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // ===== VENTAS =====
+        function renderGridVentas() {
+            const container = document.getElementById('gridVentas');
+
+            if (almacigosHoy.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="emoji-big">🌱</div><p>Primero agrega almácigos en la pestaña <strong>Preparar</strong></p></div>';
+                return;
+            }
+
+            container.innerHTML = almacigosHoy.map(a => {
+                const vendidos = ventasHoy.filter(v => v.almacigo_id === a.id).reduce((s, v) => s + v.cantidad, 0);
+                return `
+                    <div class="venta-btn" id="venta-btn-${a.id}" onclick="abrirModalVenta(${a.id})">
+                        ${vendidos > 0 ? `<div class="cantidad-badge">${vendidos}</div>` : ''}
+                        <span class="emoji">${a.emoji}</span>
+                        <div class="nombre">${a.nombre}</div>
+                        <div class="precio">₡${a.precio.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            actualizarTotalRapido();
+        }
+
+        function actualizarTotalRapido() {
+            const total = ventasHoy.reduce((s, v) => s + v.precio * v.cantidad, 0);
+            document.getElementById('totalRapido').textContent = '₡' + total.toLocaleString();
+        }
+
+        // ===== MODAL DE VENTA =====
+        function abrirModalVenta(id) {
+            const almacigo = almacigosHoy.find(a => a.id === id);
+            if (!almacigo) return;
+
+            almacigaModalSeleccionado = almacigo;
+            cantidadModal = 1;
+
+            document.getElementById('modalNombre').textContent = almacigo.emoji + ' ' + almacigo.nombre;
+            document.getElementById('modalPrecio').textContent = '₡' + almacigo.precio.toLocaleString() + ' por bandeja';
+            actualizarModalCantidad();
+
+            document.getElementById('modalCantidad').classList.add('active');
+        }
+
+        function cambiarCantidadModal(delta) {
+            cantidadModal = Math.max(1, cantidadModal + delta);
+            actualizarModalCantidad();
+        }
+
+        function actualizarModalCantidad() {
+            document.getElementById('modalCantidadNum').textContent = cantidadModal;
+            const subtotal = almacigaModalSeleccionado.precio * cantidadModal;
+            document.getElementById('modalSubtotal').textContent = 'Total: ₡' + subtotal.toLocaleString();
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalCantidad').classList.remove('active');
+            almacigaModalSeleccionado = null;
+        }
+
+        function confirmarVenta() {
+            if (!almacigaModalSeleccionado) return;
+
+            const ahora = new Date();
+            const venta = {
+                id: Date.now(),
+                almacigo_id: almacigaModalSeleccionado.id,
+                nombre: almacigaModalSeleccionado.nombre,
+                emoji: almacigaModalSeleccionado.emoji,
+                precio: almacigaModalSeleccionado.precio,
+                cantidad: cantidadModal,
+                hora: ahora.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: ahora.getTime()
+            };
+
+            ventasHoy.push(venta);
+            guardarDatos();
+
+            // Animación
+            const btn = document.getElementById('venta-btn-' + almacigaModalSeleccionado.id);
+            if (btn) {
+                btn.classList.add('animacion-venta');
+                setTimeout(() => btn.classList.remove('animacion-venta'), 400);
+            }
+
+            cerrarModal();
+            renderGridVentas();
+            renderRegistroVentas();
+
+            const subtotal = venta.precio * venta.cantidad;
+            mostrarToast(`✅ ${venta.cantidad}x ${venta.nombre} = ₡${subtotal.toLocaleString()}`);
+        }
+
+        function renderRegistroVentas() {
+            const container = document.getElementById('registroVentas');
+            if (ventasHoy.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding:16px;"><p>Las ventas aparecerán aquí</p></div>';
+                return;
+            }
+
+            const ultimas = [...ventasHoy].reverse().slice(0, 15);
+            container.innerHTML = ultimas.map(v => `
+                <div class="registro-venta">
+                    <span class="hora">${v.hora}</span>
+                    <span class="desc">${v.emoji} ${v.nombre} ×${v.cantidad}</span>
+                    <span class="monto">₡${(v.precio * v.cantidad).toLocaleString()}</span>
+                    <button class="btn-undo" onclick="deshacerVenta(${v.id})" title="Deshacer">↩️</button>
+                </div>
+            `).join('');
+        }
+
+        function deshacerVenta(id) {
+            ventasHoy = ventasHoy.filter(v => v.id !== id);
+            guardarDatos();
+            renderGridVentas();
+            renderRegistroVentas();
+            mostrarToast('↩️ Venta eliminada');
+        }
+
+        // ===== RESUMEN =====
+        function renderResumen() {
+            const total = ventasHoy.reduce((s, v) => s + v.precio * v.cantidad, 0);
+            const unidades = ventasHoy.reduce((s, v) => s + v.cantidad, 0);
+
+            document.getElementById('resumenMonto').textContent = '₡' + total.toLocaleString();
+            document.getElementById('resumenCantidad').textContent = unidades + ' bandeja' + (unidades !== 1 ? 's' : '') + ' vendida' + (unidades !== 1 ? 's' : '');
+
+            // Detalle por almácigo
+            const detalleContainer = document.getElementById('resumenDetalle');
+            if (ventasHoy.length === 0) {
+                detalleContainer.innerHTML = '<div class="empty-state" style="padding:16px;"><p>Aún no hay ventas registradas</p></div>';
+            } else {
+                const porAlmacigo = {};
+                ventasHoy.forEach(v => {
+                    if (!porAlmacigo[v.nombre]) {
+                        porAlmacigo[v.nombre] = { emoji: v.emoji, cantidad: 0, total: 0, precio: v.precio };
+                    }
+                    porAlmacigo[v.nombre].cantidad += v.cantidad;
+                    porAlmacigo[v.nombre].total += v.precio * v.cantidad;
+                });
+
+                detalleContainer.innerHTML = Object.entries(porAlmacigo)
+                    .sort((a, b) => b[1].total - a[1].total)
+                    .map(([nombre, d]) => `
+                        <div class="detalle-item">
+                            <div>
+                                <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                                <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                            </div>
+                            <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
+                        </div>
+                    `).join('');
+            }
+
+            // Registro completo
+            const regContainer = document.getElementById('resumenRegistro');
+            if (ventasHoy.length === 0) {
+                regContainer.innerHTML = '<div class="empty-state" style="padding:16px;"><p>Aún no hay ventas registradas</p></div>';
+            } else {
+                regContainer.innerHTML = [...ventasHoy].reverse().map(v => `
+                    <div class="registro-venta">
+                        <span class="hora">${v.hora}</span>
+                        <span class="desc">${v.emoji} ${v.nombre} ×${v.cantidad}</span>
+                        <span class="monto">₡${(v.precio * v.cantidad).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ===== CERRAR DÍA =====
+        function cerrarDia() {
+            if (ventasHoy.length === 0) {
+                mostrarToast('⚠️ No hay ventas para guardar');
+                return;
+            }
+
+            if (!confirm('¿Guardar el día en el historial y empezar uno nuevo?')) return;
+
+            guardarEnHistorial({
+                fecha: new Date().toISOString().split('T')[0],
+                almacigos: almacigosHoy,
+                ventas: ventasHoy
+            });
+
+            almacigosHoy = [];
+            ventasHoy = [];
+            guardarDatos();
+
+            renderAlmacigos();
+            renderSugerencias();
+            renderGridVentas();
+            renderResumen();
+            renderHistorial();
+
+            mostrarToast('📅 Día guardado en historial');
+        }
+
+        // ===== HISTORIAL =====
+        function renderHistorial() {
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const container = document.getElementById('listaHistorial');
+
+            if (historial.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="emoji-big">📅</div><p>El historial de ferias aparecerá aquí</p></div>';
+                return;
+            }
+
+            container.innerHTML = historial.map((dia, i) => {
+                const fecha = new Date(dia.fecha + 'T12:00:00');
+                const opciones = { weekday: 'short', day: 'numeric', month: 'short' };
+                return `
+                    <div class="historial-item" onclick="verDetalleHistorial(${i})">
+                        <div>
+                            <div class="historial-fecha">${fecha.toLocaleDateString('es-CR', opciones)}</div>
+                            <div class="historial-unidades">${dia.unidades} bandejas</div>
+                        </div>
+                        <div class="historial-total">₡${dia.total.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function verDetalleHistorial(index) {
+            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const dia = historial[index];
+            if (!dia) return;
+
+            const fecha = new Date(dia.fecha + 'T12:00:00');
+            const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('modalHistorialTitulo').textContent = '📅 ' + fecha.toLocaleDateString('es-CR', opciones);
+
+            // Agrupar por almácigo
+            const porAlmacigo = {};
+            (dia.ventas || []).forEach(v => {
+                if (!porAlmacigo[v.nombre]) {
+                    porAlmacigo[v.nombre] = { emoji: v.emoji || '🌱', cantidad: 0, total: 0, precio: v.precio };
+                }
+                porAlmacigo[v.nombre].cantidad += v.cantidad;
+                porAlmacigo[v.nombre].total += v.precio * v.cantidad;
+            });
+
+            let html = `
+                <div class="resumen-total" style="padding:16px;">
+                    <div class="label">Total del día</div>
+                    <div class="monto" style="font-size:2.2rem;">₡${dia.total.toLocaleString()}</div>
+                    <div class="cantidad-total">${dia.unidades} bandejas</div>
+                </div>
+            `;
+
+            html += Object.entries(porAlmacigo)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([nombre, d]) => `
+                    <div class="detalle-item">
+                        <div>
+                            <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                            <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
+                        </div>
+                        <div class="detalle-subtotal">₡${d.total.toLocaleString()}</div>
+                    </div>
+                `).join('');
+
+            document.getElementById('modalHistorialContenido').innerHTML = html;
+            document.getElementById('modalHistorial').classList.add('active');
+        }
+
+        function cerrarModalHistorial() {
+            document.getElementById('modalHistorial').classList.remove('active');
+        }
+
+        // ===== TOAST =====
+        function mostrarToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        // ===== EVENT LISTENERS =====
+        document.getElementById('inputPrecio').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') agregarAlmacigo();
+        });
+        document.getElementById('inputNombre').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('inputPrecio').focus();
+        });
+
+        // Cerrar modales al tocar fuera
+        document.getElementById('modalCantidad').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModal();
+        });
+        document.getElementById('modalHistorial').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModalHistorial();
+        });
+
+        // Iniciar
+        init();
+    </script>
+</body>
+</html>
