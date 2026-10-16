@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🌱 Mi Feria - Almácigos</title>
+    <title>🌱 AlmaciGO - Almácigos</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
     <style>
         :root {
@@ -746,7 +746,7 @@
 
     <!-- HEADER -->
     <div class="header">
-        <h1>🌱 Mi Feria</h1>
+        <h1>🌱 AlmaciGO</h1>
         <div class="fecha" id="fechaHoy"></div>
     </div>
 
@@ -980,6 +980,33 @@
 
         const SUGERENCIAS_BASE = ['Lechuga', 'Tomate', 'Culantro', 'Apio', 'Cebollino', 'Chile', 'Pepino', 'Repollo', 'Brócoli', 'Perejil'];
 
+        function fechaLocalISO(fecha = new Date()) {
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            return `${año}-${mes}-${dia}`;
+        }
+
+        function leerHistorial() {
+            try {
+                const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+                return Array.isArray(historial) ? historial : [];
+            } catch (error) {
+                console.error('No se pudo leer el historial guardado:', error);
+                return [];
+            }
+        }
+
+        function escaparHtml(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[caracter]));
+        }
+
         // ===== INICIALIZACIÓN =====
         function init() {
             mostrarFecha();
@@ -1002,7 +1029,7 @@
             const datos = {
                 almacigos: almacigosHoy,
                 ventas: ventasHoy,
-                fecha: new Date().toISOString().split('T')[0]
+                fecha: fechaLocalISO()
             };
             localStorage.setItem('feria_hoy', JSON.stringify(datos));
         }
@@ -1010,8 +1037,16 @@
         function cargarDatos() {
             const raw = localStorage.getItem('feria_hoy');
             if (raw) {
-                const datos = JSON.parse(raw);
-                const hoy = new Date().toISOString().split('T')[0];
+                let datos;
+                try {
+                    datos = JSON.parse(raw);
+                } catch (error) {
+                    console.error('No se pudieron leer los datos del día:', error);
+                    localStorage.removeItem('feria_hoy');
+                    datos = null;
+                }
+                if (!datos) return;
+                const hoy = fechaLocalISO();
                 if (datos.fecha === hoy) {
                     almacigosHoy = datos.almacigos || [];
                     ventasHoy = datos.ventas || [];
@@ -1028,7 +1063,7 @@
         }
 
         function guardarEnHistorial(datosDia) {
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             let totalVentas = 0;
             let totalUnidades = 0;
             let totalCosto = 0;
@@ -1066,7 +1101,7 @@
         // ===== SUGERENCIAS =====
         function renderSugerencias() {
             // Obtener almácigos usados del historial
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             const nombresUsados = new Set();
             historial.forEach(dia => {
                 (dia.almacigos || []).forEach(a => nombresUsados.add(a.nombre.toLowerCase()));
@@ -1085,7 +1120,7 @@
 
             const container = document.getElementById('sugerencias');
             container.innerHTML = sugerencias.slice(0, 12).map(s =>
-                `<span class="sugerencia-chip" onclick="usarSugerencia('${s}')">${obtenerEmoji(s)} ${s}</span>`
+                `<span class="sugerencia-chip" data-nombre="${escaparHtml(s)}" onclick="usarSugerencia(this.dataset.nombre)">${obtenerEmoji(s)} ${escaparHtml(s)}</span>`
             ).join('');
         }
 
@@ -1146,6 +1181,10 @@
         }
 
         function eliminarAlmacigo(id) {
+            if (ventasHoy.some(t => (t.items || []).some(item => item.almacigo_id === id))) {
+                mostrarToast('⚠️ No puedes eliminar un almácigo con ventas registradas');
+                return;
+            }
             almacigosHoy = almacigosHoy.filter(a => a.id !== id);
             guardarDatos();
             renderAlmacigos();
@@ -1167,11 +1206,11 @@
             container.innerHTML = almacigosHoy.map(a => `
                 <div class="almacigo-item">
                     <div class="almacigo-info">
-                        <div class="almacigo-nombre">${a.emoji} ${a.nombre}</div>
+                        <div class="almacigo-nombre">${a.emoji} ${escaparHtml(a.nombre)}</div>
                         <div class="almacigo-precio">₡${a.precio.toLocaleString()} / planta</div>
                         ${a.costo > 0 ? `<div class="almacigo-costo">Costo: ₡${a.costo.toLocaleString()} · Ganancia: ₡${(a.precio - a.costo).toLocaleString()}</div>` : ''}
                     </div>
-                    <button class="btn-delete" onclick="eliminarAlmacigo(${a.id})">✕</button>
+                    <button class="btn-delete" aria-label="Eliminar ${escaparHtml(a.nombre)}" onclick="eliminarAlmacigo(${a.id})">✕</button>
                 </div>
             `).join('');
         }
@@ -1202,7 +1241,7 @@
                         ${vendidos > 0 ? `<div class="vendidos-badge">${vendidos}</div>` : ''}
                         ${cantCarrito > 0 ? `<div class="cantidad-badge">${cantCarrito}</div>` : ''}
                         <span class="emoji">${a.emoji}</span>
-                        <div class="nombre">${a.nombre}</div>
+                        <div class="nombre">${escaparHtml(a.nombre)}</div>
                         <div class="precio">₡${a.precio.toLocaleString()}</div>
                     </div>
                 `;
@@ -1238,7 +1277,7 @@
 
             document.getElementById('carritoItems').innerHTML = carrito.map(c =>
                 `<div class="carrito-item-line">
-                    <span>${c.emoji} ${c.nombre} × ${c.cantidad}</span>
+                    <span>${c.emoji} ${escaparHtml(c.nombre)} × ${c.cantidad}</span>
                     <span>₡${(c.precio * c.cantidad).toLocaleString()}</span>
                 </div>`
             ).join('');
@@ -1277,7 +1316,6 @@
             });
 
             const totalItems = carrito.reduce((s, c) => s + c.cantidad, 0);
-            const tiposStr = carrito.map(c => c.nombre).join(', ');
             mostrarToast(`✅ ${totalItems} plantas vendidas = ₡${totalVenta.toLocaleString()}`);
 
             carrito = [];
@@ -1366,9 +1404,10 @@
                 });
             }
 
+            const nombreAgregado = almacigaModalSeleccionado.nombre;
             cerrarModal();
             renderGridVentas();
-            mostrarToast(`🛒 ${cantFinal}× ${almacigaModalSeleccionado.nombre} al carrito`);
+            mostrarToast(`🛒 ${cantFinal}× ${nombreAgregado} al carrito`);
         }
 
         function renderRegistroVentas() {
@@ -1453,7 +1492,7 @@
                         return `
                             <div class="detalle-item">
                                 <div>
-                                    <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                                    <div class="detalle-nombre">${d.emoji} ${escaparHtml(nombre)}</div>
                                     <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
                                     ${d.costoTotal > 0 ? `<div class="detalle-ganancia">Ganancia: ₡${gananciaItem.toLocaleString()}</div>` : ''}
                                 </div>
@@ -1491,7 +1530,7 @@
             if (!confirm('¿Guardar el día en el historial y empezar uno nuevo?')) return;
 
             guardarEnHistorial({
-                fecha: new Date().toISOString().split('T')[0],
+                fecha: fechaLocalISO(),
                 almacigos: almacigosHoy,
                 ventas: ventasHoy
             });
@@ -1511,7 +1550,7 @@
 
         // ===== HISTORIAL =====
         function renderHistorial() {
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             const container = document.getElementById('listaHistorial');
 
             if (historial.length === 0) {
@@ -1539,7 +1578,7 @@
         }
 
         function verDetalleHistorial(index) {
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             const dia = historial[index];
             if (!dia) return;
 
@@ -1590,7 +1629,7 @@
                     return `
                         <div class="detalle-item">
                             <div>
-                                <div class="detalle-nombre">${d.emoji} ${nombre}</div>
+                                <div class="detalle-nombre">${d.emoji} ${escaparHtml(nombre)}</div>
                                 <div class="detalle-cant">${d.cantidad} × ₡${d.precio.toLocaleString()}</div>
                                 ${d.costoTotal > 0 ? `<div class="detalle-ganancia">Ganancia: ₡${gananciaItem.toLocaleString()}</div>` : ''}
                             </div>
@@ -1617,7 +1656,7 @@
 
         // ===== EXPORTAR E IMPORTAR HISTORIAL =====
         function exportarHistorial() {
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             if (historial.length === 0) {
                 mostrarToast('⚠️ No hay historial guardado para exportar');
                 return;
@@ -1625,7 +1664,7 @@
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historial, null, 2));
             const dlAnchor = document.createElement('a');
-            const fechaStr = new Date().toISOString().split('T')[0];
+            const fechaStr = fechaLocalISO();
             dlAnchor.setAttribute("href", dataStr);
             dlAnchor.setAttribute("download", `feria_almacigos_historial_${fechaStr}.json`);
             document.body.appendChild(dlAnchor);
@@ -1635,7 +1674,7 @@
         }
 
         function exportarHistorialCSV() {
-            const historial = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+            const historial = leerHistorial();
             if (historial.length === 0) {
                 mostrarToast('⚠️ No hay historial guardado para exportar');
                 return;
@@ -1659,13 +1698,14 @@
                 });
                 const detalleStr = partes.join('; ');
 
-                csv += `"${dia.fecha}",${total},${unidades},${costoTotal},${ganancia},"${detalleStr}"\n`;
+                const escaparCSV = valor => `"${String(valor ?? '').replace(/"/g, '""')}"`;
+                csv += `${escaparCSV(dia.fecha)},${total},${unidades},${costoTotal},${ganancia},${escaparCSV(detalleStr)}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const dlAnchor = document.createElement('a');
-            const fechaStr = new Date().toISOString().split('T')[0];
+            const fechaStr = fechaLocalISO();
             dlAnchor.setAttribute("href", url);
             dlAnchor.setAttribute("download", `feria_almacigos_resumen_${fechaStr}.csv`);
             document.body.appendChild(dlAnchor);
@@ -1687,20 +1727,23 @@
                         throw new Error('El archivo no contiene una lista válida');
                     }
 
-                    const confirmacion = confirm(`Se encontraron ${data.length} registros en el archivo.\n¿Deseas combinar con el historial actual (Aceptar) o reemplazarlo por completo (Cancelar = no hace nada)?`);
+                    const registrosValidos = data.filter(dia => dia && typeof dia === 'object' && dia.fecha);
+                    if (registrosValidos.length !== data.length) {
+                        throw new Error('El archivo contiene registros sin fecha válida');
+                    }
+
+                    const confirmacion = confirm(`Se encontraron ${data.length} registros en el archivo.\n¿Deseas combinarlos con el historial actual?`);
                     if (!confirmacion) {
                         event.target.value = '';
                         return;
                     }
 
-                    const historialActual = JSON.parse(localStorage.getItem('feria_historial') || '[]');
+                    const historialActual = leerHistorial();
                     
                     // Combinar evitando fechas duplicadas exactas o anexando
                     const mapaPorFecha = {};
                     historialActual.forEach(h => { mapaPorFecha[h.fecha] = h; });
-                    data.forEach(h => {
-                        if (h.fecha) mapaPorFecha[h.fecha] = h;
-                    });
+                    data.forEach(h => { mapaPorFecha[h.fecha] = h; });
 
                     const combinado = Object.values(mapaPorFecha).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
                     localStorage.setItem('feria_historial', JSON.stringify(combinado));
